@@ -1,0 +1,10 @@
+{
+  "name": "تاجر برو",
+  "description": "نظام الفواتير ونقطة البيع وإدارة المخزون والمبيعات اليومية السحابي",
+  "requestFramePermissions": [
+    "camera"
+  ],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

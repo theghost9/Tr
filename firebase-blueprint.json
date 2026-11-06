@@ -1,0 +1,357 @@
+{
+  "entities": {
+    "Product": {
+      "title": "Product",
+      "description": "An inventory item in the store with purchase cost, selling price, stock quantity, and low-stock alert threshold.",
+      "type": "object",
+      "properties": {
+        "userId": {
+          "type": "string",
+          "description": "UID of the store owner."
+        },
+        "name": {
+          "type": "string",
+          "description": "Product name."
+        },
+        "barcode": {
+          "type": "string",
+          "description": "Product barcode or SKU."
+        },
+        "category": {
+          "type": "string",
+          "description": "Product category."
+        },
+        "costPrice": {
+          "type": "number",
+          "description": "Purchase/cost price per unit."
+        },
+        "sellingPrice": {
+          "type": "number",
+          "description": "Selling price per unit."
+        },
+        "stockQuantity": {
+          "type": "integer",
+          "description": "Current stock quantity in inventory."
+        },
+        "minStockThreshold": {
+          "type": "integer",
+          "description": "Minimum stock level before triggering low-stock warning."
+        },
+        "unit": {
+          "type": "string",
+          "description": "Unit of measure (e.g. قطعة, كجم, علبة)."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp of creation (FieldValue.serverTimestamp())."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp of last update (FieldValue.serverTimestamp())."
+        }
+      },
+      "required": [
+        "userId",
+        "name",
+        "barcode",
+        "category",
+        "costPrice",
+        "sellingPrice",
+        "stockQuantity",
+        "minStockThreshold",
+        "unit",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "Invoice": {
+      "title": "Invoice",
+      "description": "A point-of-sale sales invoice with line items, total revenue, cost of goods sold, net profit, and payment/credit details.",
+      "type": "object",
+      "properties": {
+        "userId": {
+          "type": "string",
+          "description": "UID of the store owner."
+        },
+        "invoiceNumber": {
+          "type": "string",
+          "description": "Sequential or formatted invoice number."
+        },
+        "customerId": {
+          "type": "string",
+          "description": "Optional customer ID for credit or tracked sales."
+        },
+        "customerName": {
+          "type": "string",
+          "description": "Customer display name."
+        },
+        "itemsSummary": {
+          "type": "string",
+          "description": "Summary string of sold items."
+        },
+        "items": {
+          "type": "array",
+          "description": "Bounded list of sold line item maps (up to 50 items)."
+        },
+        "itemCount": {
+          "type": "integer",
+          "description": "Total number of units sold in this invoice."
+        },
+        "subtotal": {
+          "type": "number",
+          "description": "Invoice subtotal before discount and tax."
+        },
+        "discountAmount": {
+          "type": "number",
+          "description": "Discount amount applied to the invoice."
+        },
+        "taxAmount": {
+          "type": "number",
+          "description": "Tax amount applied to the invoice."
+        },
+        "totalAmount": {
+          "type": "number",
+          "description": "Final total amount of the invoice."
+        },
+        "totalCost": {
+          "type": "number",
+          "description": "Total cost of goods sold for accurate profit calculation."
+        },
+        "netProfit": {
+          "type": "number",
+          "description": "Net profit earned from this invoice (totalAmount - totalCost)."
+        },
+        "paidAmount": {
+          "type": "number",
+          "description": "Amount paid immediately by the customer."
+        },
+        "remainingAmount": {
+          "type": "number",
+          "description": "Remaining unpaid balance added to customer debt."
+        },
+        "paymentMethod": {
+          "type": "string",
+          "enum": ["CASH", "CREDIT", "PARTIAL", "CARD"],
+          "description": "Payment method type."
+        },
+        "notes": {
+          "type": "string",
+          "description": "Additional invoice notes."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp of creation (FieldValue.serverTimestamp())."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp of last update (FieldValue.serverTimestamp())."
+        }
+      },
+      "required": [
+        "userId",
+        "invoiceNumber",
+        "customerId",
+        "customerName",
+        "itemsSummary",
+        "items",
+        "itemCount",
+        "subtotal",
+        "discountAmount",
+        "taxAmount",
+        "totalAmount",
+        "totalCost",
+        "netProfit",
+        "paidAmount",
+        "remainingAmount",
+        "paymentMethod",
+        "notes",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "Customer": {
+      "title": "Customer",
+      "description": "A store customer record with total purchases and outstanding credit/debt balance.",
+      "type": "object",
+      "properties": {
+        "userId": {
+          "type": "string",
+          "description": "UID of the store owner."
+        },
+        "name": {
+          "type": "string",
+          "description": "Customer full name."
+        },
+        "phone": {
+          "type": "string",
+          "description": "Customer phone number."
+        },
+        "address": {
+          "type": "string",
+          "description": "Customer address."
+        },
+        "totalPurchases": {
+          "type": "number",
+          "description": "Cumulative purchase amount."
+        },
+        "currentDebt": {
+          "type": "number",
+          "description": "Current unpaid debt balance owed by the customer."
+        },
+        "notes": {
+          "type": "string",
+          "description": "Customer notes."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp of creation (FieldValue.serverTimestamp())."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp of last update (FieldValue.serverTimestamp())."
+        }
+      },
+      "required": [
+        "userId",
+        "name",
+        "phone",
+        "address",
+        "totalPurchases",
+        "currentDebt",
+        "notes",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "DebtPayment": {
+      "title": "DebtPayment",
+      "description": "A payment receipt recording a customer paying down their outstanding debt balance.",
+      "type": "object",
+      "properties": {
+        "userId": {
+          "type": "string",
+          "description": "UID of the store owner."
+        },
+        "customerId": {
+          "type": "string",
+          "description": "ID of the customer making the payment."
+        },
+        "customerName": {
+          "type": "string",
+          "description": "Name of the customer making the payment."
+        },
+        "amount": {
+          "type": "number",
+          "description": "Amount paid towards debt."
+        },
+        "notes": {
+          "type": "string",
+          "description": "Payment receipt notes."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp of creation (FieldValue.serverTimestamp())."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp of last update (FieldValue.serverTimestamp())."
+        }
+      },
+      "required": [
+        "userId",
+        "customerId",
+        "customerName",
+        "amount",
+        "notes",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "StoreSettings": {
+      "title": "StoreSettings",
+      "description": "Store profile and invoice preferences including store name, currency symbol, and default tax rate.",
+      "type": "object",
+      "properties": {
+        "userId": {
+          "type": "string",
+          "description": "UID of the store owner."
+        },
+        "storeName": {
+          "type": "string",
+          "description": "Store name printed on invoices."
+        },
+        "storePhone": {
+          "type": "string",
+          "description": "Store phone printed on invoices."
+        },
+        "storeAddress": {
+          "type": "string",
+          "description": "Store address printed on invoices."
+        },
+        "currencySymbol": {
+          "type": "string",
+          "description": "Active currency symbol (default $)."
+        },
+        "defaultTaxRate": {
+          "type": "number",
+          "description": "Default tax percentage (0 to 100)."
+        },
+        "receiptFooter": {
+          "type": "string",
+          "description": "Custom footer message on receipts."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp of creation (FieldValue.serverTimestamp())."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp of last update (FieldValue.serverTimestamp())."
+        }
+      },
+      "required": [
+        "userId",
+        "storeName",
+        "storePhone",
+        "storeAddress",
+        "currencySymbol",
+        "defaultTaxRate",
+        "receiptFooter",
+        "createdAt",
+        "updatedAt"
+      ]
+    }
+  },
+  "firestore": {
+    "/users/{userId}/products/{productId}": {
+      "schema": { "$ref": "#/entities/Product" },
+      "description": "Store inventory products isolated per user."
+    },
+    "/users/{userId}/invoices/{invoiceId}": {
+      "schema": { "$ref": "#/entities/Invoice" },
+      "description": "Store sales invoices isolated per user."
+    },
+    "/users/{userId}/customers/{customerId}": {
+      "schema": { "$ref": "#/entities/Customer" },
+      "description": "Store customers and debt balances isolated per user."
+    },
+    "/users/{userId}/payments/{paymentId}": {
+      "schema": { "$ref": "#/entities/DebtPayment" },
+      "description": "Customer debt repayment receipts isolated per user."
+    },
+    "/users/{userId}/settings/{settingId}": {
+      "schema": { "$ref": "#/entities/StoreSettings" },
+      "description": "Store configuration settings isolated per user."
+    }
+  }
+}

@@ -1,0 +1,223 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Global safety net: default deny
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() >= 1 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function isNonNegativeNumber(val) {
+      return (val is int || val is float) && val >= 0;
+    }
+
+    function isAnyNumber(val) {
+      return (val is int || val is float);
+    }
+
+    function isValidProduct(data) {
+      return data.userId is string && data.userId == request.auth.uid &&
+             data.name is string && data.name.size() >= 1 && data.name.size() <= 120 &&
+             data.barcode is string && data.barcode.size() <= 64 &&
+             data.category is string && data.category.size() >= 1 && data.category.size() <= 60 &&
+             isNonNegativeNumber(data.costPrice) &&
+             isNonNegativeNumber(data.sellingPrice) &&
+             data.stockQuantity is int && data.stockQuantity >= 0 &&
+             data.minStockThreshold is int && data.minStockThreshold >= 0 &&
+             data.unit is string && data.unit.size() >= 1 && data.unit.size() <= 30 &&
+             data.createdAt is timestamp && data.createdAt <= request.time &&
+             data.updatedAt is timestamp && data.updatedAt <= request.time;
+    }
+
+    function isValidInvoice(data) {
+      return data.userId is string && data.userId == request.auth.uid &&
+             data.invoiceNumber is string && data.invoiceNumber.size() >= 1 && data.invoiceNumber.size() <= 40 &&
+             data.customerId is string && data.customerId.size() <= 128 &&
+             data.customerName is string && data.customerName.size() >= 1 && data.customerName.size() <= 120 &&
+             data.itemsSummary is string && data.itemsSummary.size() >= 1 && data.itemsSummary.size() <= 2000 &&
+             data.items is list && data.items.size() >= 1 && data.items.size() <= 50 && data.items[0] is map &&
+             data.itemCount is int && data.itemCount >= 1 &&
+             isNonNegativeNumber(data.subtotal) &&
+             isNonNegativeNumber(data.discountAmount) &&
+             isNonNegativeNumber(data.taxAmount) &&
+             isNonNegativeNumber(data.totalAmount) &&
+             isNonNegativeNumber(data.totalCost) &&
+             isAnyNumber(data.netProfit) &&
+             isNonNegativeNumber(data.paidAmount) &&
+             isNonNegativeNumber(data.remainingAmount) &&
+             data.paymentMethod is string && data.paymentMethod in ['CASH', 'CREDIT', 'PARTIAL', 'CARD'] &&
+             data.notes is string && data.notes.size() <= 500 &&
+             data.createdAt is timestamp && data.createdAt <= request.time &&
+             data.updatedAt is timestamp && data.updatedAt <= request.time;
+    }
+
+    function isValidCustomer(data) {
+      return data.userId is string && data.userId == request.auth.uid &&
+             data.name is string && data.name.size() >= 1 && data.name.size() <= 120 &&
+             data.phone is string && data.phone.size() <= 40 &&
+             data.address is string && data.address.size() <= 200 &&
+             isNonNegativeNumber(data.totalPurchases) &&
+             isNonNegativeNumber(data.currentDebt) &&
+             data.notes is string && data.notes.size() <= 500 &&
+             data.createdAt is timestamp && data.createdAt <= request.time &&
+             data.updatedAt is timestamp && data.updatedAt <= request.time;
+    }
+
+    function isValidDebtPayment(data) {
+      return data.userId is string && data.userId == request.auth.uid &&
+             data.customerId is string && data.customerId.size() >= 1 && data.customerId.size() <= 128 &&
+             data.customerName is string && data.customerName.size() >= 1 && data.customerName.size() <= 120 &&
+             (data.amount is int || data.amount is float) && data.amount > 0 &&
+             data.notes is string && data.notes.size() <= 500 &&
+             data.createdAt is timestamp && data.createdAt <= request.time &&
+             data.updatedAt is timestamp && data.updatedAt <= request.time;
+    }
+
+    function isValidStoreSettings(data) {
+      return data.userId is string && data.userId == request.auth.uid &&
+             data.storeName is string && data.storeName.size() >= 1 && data.storeName.size() <= 120 &&
+             data.storePhone is string && data.storePhone.size() <= 40 &&
+             data.storeAddress is string && data.storeAddress.size() <= 200 &&
+             data.currencySymbol is string && data.currencySymbol.size() >= 1 && data.currencySymbol.size() <= 10 &&
+             isNonNegativeNumber(data.defaultTaxRate) && data.defaultTaxRate <= 100 &&
+             data.receiptFooter is string && data.receiptFooter.size() <= 300 &&
+             data.createdAt is timestamp && data.createdAt <= request.time &&
+             data.updatedAt is timestamp && data.updatedAt <= request.time;
+    }
+
+    match /users/{userId}/products/{productId} {
+      allow get: if isSignedIn() && isValidId(userId) && isValidId(productId) && request.auth.uid == userId;
+      allow list: if isSignedIn() && request.auth.uid == userId && existing().userId == request.auth.uid;
+
+      allow create: if isSignedIn() &&
+                       isValidId(userId) &&
+                       isValidId(productId) &&
+                       request.auth.uid == userId &&
+                       incoming().keys().hasAll(['userId', 'name', 'barcode', 'category', 'costPrice', 'sellingPrice', 'stockQuantity', 'minStockThreshold', 'unit', 'createdAt', 'updatedAt']) &&
+                       incoming().keys().hasOnly(['userId', 'name', 'barcode', 'category', 'costPrice', 'sellingPrice', 'stockQuantity', 'minStockThreshold', 'unit', 'createdAt', 'updatedAt']) &&
+                       isValidProduct(incoming());
+
+      allow update: if isSignedIn() &&
+                       isValidId(userId) &&
+                       isValidId(productId) &&
+                       request.auth.uid == userId &&
+                       isValidProduct(incoming()) &&
+                       incoming().userId == existing().userId &&
+                       incoming().createdAt == existing().createdAt &&
+                       incoming().diff(existing()).affectedKeys().hasOnly(['name', 'barcode', 'category', 'costPrice', 'sellingPrice', 'stockQuantity', 'minStockThreshold', 'unit', 'updatedAt']);
+
+      allow delete: if isSignedIn() && isValidId(userId) && isValidId(productId) && request.auth.uid == userId;
+    }
+
+    match /users/{userId}/invoices/{invoiceId} {
+      allow get: if isSignedIn() && isValidId(userId) && isValidId(invoiceId) && request.auth.uid == userId;
+      allow list: if isSignedIn() && request.auth.uid == userId && existing().userId == request.auth.uid;
+
+      allow create: if isSignedIn() &&
+                       isValidId(userId) &&
+                       isValidId(invoiceId) &&
+                       request.auth.uid == userId &&
+                       incoming().keys().hasAll(['userId', 'invoiceNumber', 'customerId', 'customerName', 'itemsSummary', 'items', 'itemCount', 'subtotal', 'discountAmount', 'taxAmount', 'totalAmount', 'totalCost', 'netProfit', 'paidAmount', 'remainingAmount', 'paymentMethod', 'notes', 'createdAt', 'updatedAt']) &&
+                       incoming().keys().hasOnly(['userId', 'invoiceNumber', 'customerId', 'customerName', 'itemsSummary', 'items', 'itemCount', 'subtotal', 'discountAmount', 'taxAmount', 'totalAmount', 'totalCost', 'netProfit', 'paidAmount', 'remainingAmount', 'paymentMethod', 'notes', 'createdAt', 'updatedAt']) &&
+                       isValidInvoice(incoming());
+
+      allow update: if isSignedIn() &&
+                       isValidId(userId) &&
+                       isValidId(invoiceId) &&
+                       request.auth.uid == userId &&
+                       isValidInvoice(incoming()) &&
+                       incoming().userId == existing().userId &&
+                       incoming().createdAt == existing().createdAt &&
+                       incoming().diff(existing()).affectedKeys().hasOnly(['paidAmount', 'remainingAmount', 'paymentMethod', 'notes', 'updatedAt']);
+
+      allow delete: if isSignedIn() && isValidId(userId) && isValidId(invoiceId) && request.auth.uid == userId;
+    }
+
+    match /users/{userId}/customers/{customerId} {
+      allow get: if isSignedIn() && isValidId(userId) && isValidId(customerId) && request.auth.uid == userId;
+      allow list: if isSignedIn() && request.auth.uid == userId && existing().userId == request.auth.uid;
+
+      allow create: if isSignedIn() &&
+                       isValidId(userId) &&
+                       isValidId(customerId) &&
+                       request.auth.uid == userId &&
+                       incoming().keys().hasAll(['userId', 'name', 'phone', 'address', 'totalPurchases', 'currentDebt', 'notes', 'createdAt', 'updatedAt']) &&
+                       incoming().keys().hasOnly(['userId', 'name', 'phone', 'address', 'totalPurchases', 'currentDebt', 'notes', 'createdAt', 'updatedAt']) &&
+                       isValidCustomer(incoming());
+
+      allow update: if isSignedIn() &&
+                       isValidId(userId) &&
+                       isValidId(customerId) &&
+                       request.auth.uid == userId &&
+                       isValidCustomer(incoming()) &&
+                       incoming().userId == existing().userId &&
+                       incoming().createdAt == existing().createdAt &&
+                       incoming().diff(existing()).affectedKeys().hasOnly(['name', 'phone', 'address', 'totalPurchases', 'currentDebt', 'notes', 'updatedAt']);
+
+      allow delete: if isSignedIn() && isValidId(userId) && isValidId(customerId) && request.auth.uid == userId;
+    }
+
+    match /users/{userId}/payments/{paymentId} {
+      allow get: if isSignedIn() && isValidId(userId) && isValidId(paymentId) && request.auth.uid == userId;
+      allow list: if isSignedIn() && request.auth.uid == userId && existing().userId == request.auth.uid;
+
+      allow create: if isSignedIn() &&
+                       isValidId(userId) &&
+                       isValidId(paymentId) &&
+                       request.auth.uid == userId &&
+                       incoming().keys().hasAll(['userId', 'customerId', 'customerName', 'amount', 'notes', 'createdAt', 'updatedAt']) &&
+                       incoming().keys().hasOnly(['userId', 'customerId', 'customerName', 'amount', 'notes', 'createdAt', 'updatedAt']) &&
+                       isValidDebtPayment(incoming());
+
+      allow update: if isSignedIn() &&
+                       isValidId(userId) &&
+                       isValidId(paymentId) &&
+                       request.auth.uid == userId &&
+                       isValidDebtPayment(incoming()) &&
+                       incoming().userId == existing().userId &&
+                       incoming().createdAt == existing().createdAt &&
+                       incoming().diff(existing()).affectedKeys().hasOnly(['notes', 'updatedAt']);
+
+      allow delete: if isSignedIn() && isValidId(userId) && isValidId(paymentId) && request.auth.uid == userId;
+    }
+
+    match /users/{userId}/settings/{settingId} {
+      allow get: if isSignedIn() && isValidId(userId) && isValidId(settingId) && request.auth.uid == userId;
+      allow list: if isSignedIn() && request.auth.uid == userId && existing().userId == request.auth.uid;
+
+      allow create: if isSignedIn() &&
+                       isValidId(userId) &&
+                       isValidId(settingId) &&
+                       request.auth.uid == userId &&
+                       incoming().keys().hasAll(['userId', 'storeName', 'storePhone', 'storeAddress', 'currencySymbol', 'defaultTaxRate', 'receiptFooter', 'createdAt', 'updatedAt']) &&
+                       incoming().keys().hasOnly(['userId', 'storeName', 'storePhone', 'storeAddress', 'currencySymbol', 'defaultTaxRate', 'receiptFooter', 'createdAt', 'updatedAt']) &&
+                       isValidStoreSettings(incoming());
+
+      allow update: if isSignedIn() &&
+                       isValidId(userId) &&
+                       isValidId(settingId) &&
+                       request.auth.uid == userId &&
+                       isValidStoreSettings(incoming()) &&
+                       incoming().userId == existing().userId &&
+                       incoming().createdAt == existing().createdAt &&
+                       incoming().diff(existing()).affectedKeys().hasOnly(['storeName', 'storePhone', 'storeAddress', 'currencySymbol', 'defaultTaxRate', 'receiptFooter', 'updatedAt']);
+
+      allow delete: if isSignedIn() && isValidId(userId) && isValidId(settingId) && request.auth.uid == userId;
+    }
+  }
+}

@@ -1,0 +1,23 @@
+<resources>
+    <string name="app_name">تاجر برو</string>
+    <string name="app_subtitle">نظام الفواتير وإدارة المخزون والمبيعات السحابي</string>
+    <string name="sign_in_with_google">تسجيل الدخول عبر حساب Google</string>
+    <string name="sign_out">تسجيل الخروج</string>
+    <string name="nav_dashboard">الرئيسية</string>
+    <string name="nav_pos">نقطة البيع</string>
+    <string name="nav_inventory">المخزون</string>
+    <string name="nav_invoices">الفواتير</string>
+    <string name="nav_customers">العملاء والديون</string>
+    <string name="today_sales">مبيعات اليوم</string>
+    <string name="today_net_profit">صافي ربح اليوم</string>
+    <string name="today_invoices_count">فواتير اليوم</string>
+    <string name="total_customer_debts">إجمالي ديون العملاء</string>
+    <string name="low_stock_alerts">تنبيهات نقص المخزون</string>
+    <string name="new_invoice">فاتورة بيع جديدة</string>
+    <string name="add_product">إضافة صنف جديد</string>
+    <string name="scan_barcode">مسح الباركود بالكاميرا</string>
+    <string name="share_pdf_invoice">مشاركة الفاتورة PDF</string>
+    <string name="settings_title">إعدادات المحل والعملة</string>
+    <string name="developer_credit">تم بناء التطبيق من خلال TRiX</string>
+    <string name="developer_facebook_url" translatable="false">https://www.facebook.com/share/1CWeZYT8pj/</string>
+</resources>
